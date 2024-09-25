@@ -3,19 +3,22 @@ import { CarsModule } from './cars/cars.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
+import * as dotenv from 'dotenv';
+
+dotenv.config(); // Carrega as variáveis do .env
 
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type:'mssql',
-      host: '10.3.171.42',
+      host: process.env.DB_HOST,
       port: 1433,
-      username: "teste",
-      password: "SIMPEQ@123",
-      database: 'SIMPEQ_HOMOLOG',
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       schema: 'dbo', // Especificar o esquema correto aqui
-      synchronize: false,
+      synchronize: true,
       options: {
         encrypt: false,  // Se estiver usando uma conexão não criptografada
         trustServerCertificate: true,  // Pode ser necessário em conexões locais

@@ -13,4 +13,7 @@ export class Car {
 
     @Column()
     year: number;
+
+    @Column({ nullable: true })
+    image: string;
 }

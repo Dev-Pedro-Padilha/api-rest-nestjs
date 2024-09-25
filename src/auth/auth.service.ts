@@ -20,7 +20,10 @@ export class AuthService {
 
   async authenticate(username: string, password: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.ad.authenticate(username, password, async (err: any, auth: boolean) => {
+      // Adiciona o sufixo ao username
+      const fullUsername = `${username}`+process.env.LDAP_DOMAIN;
+      console.log(fullUsername);
+      this.ad.authenticate(fullUsername, password, async (err: any, auth: boolean) => {
         if (err) {
           return reject(err);
         }
@@ -40,15 +43,22 @@ export class AuthService {
 
   async getUserData(username: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.ad.findUser(username, { attributes: ['*'] }, (err: any, user: any) => {
-        if (err) {
-          return reject(err);
-        }
-        if (!user) {
-          return reject(new Error('User not found'));
-        }
-        return resolve(user);
-      });
+        this.ad.findUser({ attributes: ['cn', 'title', 'physicalDeliveryOfficeName', 'department', 'mail', 'description', 'thumbnailPhoto'] }, username, (err: any, user: any) => {
+            if (err) {
+                return reject(err);
+            }
+            if (!user) {
+                return reject(new Error('User not found'));
+            }
+
+            //Converte a foto para Base64, se disponível
+            if (user.thumbnailPhoto){
+              user.thumbnailPhoto = Buffer.from(user.thumbnailPhoto, 'binary').toString('base64');
+            }
+
+            return resolve(user);
+        });
     });
   }
+
 }

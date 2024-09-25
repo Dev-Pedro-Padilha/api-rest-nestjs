@@ -19,7 +19,12 @@ export class AuthController {
   
       // Buscar dados do usuário após a autenticação
       const userData = await this.authService.getUserData(username);
-      return { message: 'Login successful!', user: userData };
+      //Se a foto do usuario existir, converte para Base64
+      if (userData.thumbnailPhoto){
+        userData.thumbnailPhoto = Buffer.from(userData.thumbnailPhoto, 'binary').toString('base64');
+      }
+
+      return { message: 'Login successful!', user: userData};
     } catch (error) {
       console.error('Error during authentication:', error);
       throw new HttpException({
@@ -35,4 +40,7 @@ export class AuthController {
     // Por exemplo, limpar qualquer sessão ou informação no lado do cliente
     return { message: 'Logout successful!' };
   }
+
+
+
 }
