@@ -4,6 +4,7 @@ import { CarsModule } from './cars/cars.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
+import { HomeModule } from './home/home.module';
 import * as dotenv from 'dotenv';
 
 dotenv.config(); // Carrega as variáveis do .env
@@ -29,7 +30,8 @@ dotenv.config(); // Carrega as variáveis do .env
     }),
     CarsModule,
     UsuariosModule,
-    AuthModule
+    AuthModule,
+    HomeModule
   ],
   controllers: [],
   providers: [],
