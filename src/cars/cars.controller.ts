@@ -9,14 +9,16 @@ import { File } from 'multer';
 import { Response } from 'express';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-
+@ApiTags('Carros')
 @Controller('cars')
 export class CarsController {
 
   constructor(private readonly carsService: CarsService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create Car' })
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async create(@UploadedFile() file: File, @Body() createCarDto: CreateCarDto) {
     if(file){
@@ -27,16 +29,19 @@ export class CarsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Find All Cars' })
   findAll() {
     return this.carsService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Find by One Car' })
   findOne(@Param('id') id: string) {
     return this.carsService.findOne(+id);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update One Car' })
   @UseInterceptors(FileInterceptor('image', multerOptions))
   update(@Param('id') id: string, @UploadedFile() file: File, @Body() updateCarDto: UpdateCarDto) {
     if (file){
@@ -46,12 +51,14 @@ export class CarsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete One Car' })
   remove(@Param('id') id: string) {
     return this.carsService.remove(+id);
   }
 
   // Método para baixar ou visualizar a imagem
   @Get('file/:filename')
+  @ApiOperation({ summary: 'Baixa Imagem' })
   handleFile(
     @Param('filename') filename: string, 
     @Res() res: Response, 

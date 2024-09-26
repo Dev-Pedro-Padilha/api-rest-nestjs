@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import * as ActiveDirectory from 'activedirectory2';
 import * as dotenv from 'dotenv';
+import * as jwt from 'jsonwebtoken';
 
 dotenv.config(); // Carrega as variáveis do .env
 
 @Injectable()
 export class AuthService {
   private ad: any;
+  private readonly jwtSecret: string;
 
   constructor() {
     const config = {
@@ -16,13 +18,14 @@ export class AuthService {
       password: process.env.LDAP_PASSWORD,
     };
     this.ad = new ActiveDirectory(config);
+    this.jwtSecret = process.env.JWT_SECRET_KEY;
   }
 
   async authenticate(username: string, password: string): Promise<any> {
     return new Promise((resolve, reject) => {
       // Adiciona o sufixo ao username
       const fullUsername = `${username}`+process.env.LDAP_DOMAIN;
-      console.log(fullUsername);
+      //console.log(fullUsername);
       this.ad.authenticate(fullUsername, password, async (err: any, auth: boolean) => {
         if (err) {
           return reject(err);
@@ -30,7 +33,8 @@ export class AuthService {
         if (auth) {
           try {
             const userDetails = await this.getUserData(username);
-            return resolve(userDetails);
+            const token = this.generateToken(userDetails);
+            return resolve({ userDetails, token });
           } catch (error) {
             return reject(error);
           }
@@ -61,4 +65,16 @@ export class AuthService {
     });
   }
 
+  generateToken(userDetails: any): string {
+    const payload = { username: userDetails.username, department: userDetails.department};
+    return jwt.sign(payload, this.jwtSecret, { expiresIn: process.env.JWT_TOKEN_EXPIRES });
+  }
+
+  validadteToken(token: string): any {
+    try{
+      return jwt.verify(token, this.jwtSecret);
+    } catch(err){
+      return null;
+    }
+  }
 }

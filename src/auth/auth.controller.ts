@@ -1,16 +1,20 @@
 import { Controller, Post, Get, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './auth.dto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Autenticação')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  
   @Post('login')
+  @ApiOperation({ summary: 'Faz Autenticação e gera Token' })
   async login(@Body() authDto: AuthDto) {
     const { username, password } = authDto;
     try {
-      console.log('Received login request:', authDto);
+      //console.log('Received login request:', authDto);
       const isAuthenticated = await this.authService.authenticate(username, password);
   
       if (!isAuthenticated) {
@@ -23,8 +27,10 @@ export class AuthController {
       if (userData.thumbnailPhoto){
         userData.thumbnailPhoto = Buffer.from(userData.thumbnailPhoto, 'binary').toString('base64');
       }
+      //Gera o token chamando a função no AuthService
+      const token = this.authService.generateToken(userData);
 
-      return { message: 'Login successful!', user: userData};
+      return { message: 'Login successful!', token, user: userData};
     } catch (error) {
       console.error('Error during authentication:', error);
       throw new HttpException({

@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { AuthMiddleware } from './auth/middleware/auth.middleware';
 import { CarsModule } from './cars/cars.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsuariosModule } from './usuarios/usuarios.module';
@@ -34,4 +35,11 @@ dotenv.config(); // Carrega as variáveis do .env
   providers: [],
 })
 
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer){
+    consumer
+    .apply(AuthMiddleware)
+    .exclude('auth/login')
+    .forRoutes('*');    //Aplica o Middleware em todas as rotas ou rotas especificas
+  }
+}
