@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as ActiveDirectory from 'activedirectory2';
 import * as dotenv from 'dotenv';
 import * as jwt from 'jsonwebtoken';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 dotenv.config(); // Carrega as variáveis do .env
 
@@ -32,9 +34,7 @@ export class AuthService {
         }
         if (auth) {
           try {
-            const userDetails = await this.getUserData(username);
-            const token = this.generateToken(userDetails);
-            return resolve({ userDetails, token });
+            return resolve({});
           } catch (error) {
             return reject(error);
           }
@@ -47,19 +47,19 @@ export class AuthService {
 
   async getUserData(username: string): Promise<any> {
     return new Promise((resolve, reject) => {
-        this.ad.findUser({ attributes: ['cn', 'title', 'physicalDeliveryOfficeName', 'department', 'mail', 'description', 'thumbnailPhoto'] }, username, (err: any, user: any) => {
+        this.ad.findUser({ attributes: ['cn', 'title', 'physicalDeliveryOfficeName', 'department', 'mail', 'description'] }, username, (err: any, user: any) => {
             if (err) {
                 return reject(err);
             }
             if (!user) {
                 return reject(new Error('User not found'));
             }
-
+            /*
             //Converte a foto para Base64, se disponível
             if (user.thumbnailPhoto){
               user.thumbnailPhoto = Buffer.from(user.thumbnailPhoto, 'binary').toString('base64');
             }
-
+            */
             return resolve(user);
         });
     });
@@ -77,4 +77,31 @@ export class AuthService {
       return null;
     }
   }
+
+  async getImageAsBase64(userDetails: any): Promise<string> {
+    try{
+      console.log(userDetails.description);
+      const imageName = userDetails.description;
+      const basePath = '\\\\perto06\\ECQ\\SIMPEQ\\FOTOS';
+
+      const imagePath = path.join(basePath, imageName+'.fc');
+      console.log(imagePath);
+      if(!imagePath){
+        return null;
+      }
+      //console.log(imagePath);
+      //Lendo o arquivo de forma assíncrona com Promises
+      const data = await fs.readFile(imagePath);
+
+      const imageBase64 = data.toString('base64');
+      
+      return imageBase64;
+
+    } catch (error){
+      console.error('Erro ao buscar imagem: ${error.message}');
+      //throw new Error('Erro ao buscar imagem: ${error.message}');
+      return null;
+    }
+  }
+
 }

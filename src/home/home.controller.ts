@@ -9,7 +9,7 @@ export class HomeController {
 
     @Post()
     @ApiOperation({ summary: 'Recebe json e token para iniciar pagina home' })
-    async receiveAuthData(@Body() homeDto: HomeDto) {
+    async receiveAuthData() {
         // Aqui você pode processar o token e os dados do usuário
         //console.log('Token:', homeDto.token);
         //console.log('User Data:', homeDto.user);
@@ -17,7 +17,6 @@ export class HomeController {
         // Retorne uma resposta apropriada
         return {
         message: 'Dados recebidos com sucesso!',
-        user: homeDto.user,
         };
     }
 }

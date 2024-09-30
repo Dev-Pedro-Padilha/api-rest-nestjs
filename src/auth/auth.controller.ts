@@ -14,23 +14,21 @@ export class AuthController {
   async login(@Body() authDto: AuthDto) {
     const { username, password } = authDto;
     try {
-      //console.log('Received login request:', authDto);
+      //Autentica o usuario e retorna os dados 
       const isAuthenticated = await this.authService.authenticate(username, password);
   
       if (!isAuthenticated) {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
-  
-      // Buscar dados do usuário após a autenticação
-      const userData = await this.authService.getUserData(username);
-      //Se a foto do usuario existir, converte para Base64
-      if (userData.thumbnailPhoto){
-        userData.thumbnailPhoto = Buffer.from(userData.thumbnailPhoto, 'binary').toString('base64');
-      }
-      //Gera o token chamando a função no AuthService
-      const token = this.authService.generateToken(userData);
 
-      return { message: 'Login successful!', token, user: userData};
+      const user = await this.authService.getUserData(username);
+
+      const token = this.authService.generateToken(user);
+
+      //Buscar image,
+      const imageBase64 = await this.authService.getImageAsBase64(user);
+
+      return { message: 'Login successful!', user, token, imageBase64 };
     } catch (error) {
       console.error('Error during authentication:', error);
       throw new HttpException({
