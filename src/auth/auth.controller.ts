@@ -2,6 +2,12 @@ import { Controller, Post, Get, Body, HttpException, HttpStatus } from '@nestjs/
 import { AuthService } from './auth.service';
 import { AuthDto } from './auth.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import * as fs from 'fs/promises';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import * as path from 'path';
+
+const execPromise = promisify(exec);
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -22,13 +28,11 @@ export class AuthController {
       }
 
       const user = await this.authService.getUserData(username);
-
+      //console.log(user);
       const token = this.authService.generateToken(user);
-
-      //Buscar image,
-      const imageBase64 = await this.authService.getImageAsBase64(user);
-
-      return { message: 'Login successful!', user, token, imageBase64 };
+      
+      //console.log(user);
+      return { message: 'Login successful!', user, token };
     } catch (error) {
       console.error('Error during authentication:', error);
       throw new HttpException({

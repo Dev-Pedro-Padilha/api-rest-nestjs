@@ -3,6 +3,7 @@ import { AuthMiddleware } from './auth/middleware/auth.middleware';
 import { CarsModule } from './cars/cars.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsuariosModule } from './usuarios/usuarios.module';
+import { DepartmentsModule } from './departments/departments.module';
 import { AuthModule } from './auth/auth.module';
 import { HomeModule } from './home/home.module';
 import * as dotenv from 'dotenv';
@@ -20,7 +21,7 @@ dotenv.config(); // Carrega as variáveis do .env
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       schema: 'dbo', // Especificar o esquema correto aqui
-      synchronize: true,
+      synchronize: false,
       options: {
         encrypt: false,  // Se estiver usando uma conexão não criptografada
         trustServerCertificate: true,  // Pode ser necessário em conexões locais
@@ -30,6 +31,7 @@ dotenv.config(); // Carrega as variáveis do .env
     }),
     CarsModule,
     UsuariosModule,
+    DepartmentsModule,
     AuthModule,
     HomeModule
   ],
