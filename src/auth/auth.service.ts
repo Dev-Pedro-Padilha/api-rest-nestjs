@@ -9,6 +9,7 @@ import { promisify } from 'util';
 import { unlink } from 'fs';
 //Serviço de Departamentos
 import { DepartmentsService } from '../departments/departments.service';
+import { CargosService } from 'src/cargos/cargos.service';
 
 const unlinkAsync = promisify(unlink);
 const execPromise = promisify(exec);
@@ -20,7 +21,10 @@ export class AuthService {
   private ad: any;
   private readonly jwtSecret: string;
 
-  constructor(private readonly departmentService: DepartmentsService) {
+  constructor(
+    private readonly departmentService: DepartmentsService,
+    private readonly cargosService: CargosService
+  ) {
     const config = {
       url: process.env.LDAP_URL,
       baseDN: process.env.LDAP_BASE_DN,
@@ -32,21 +36,27 @@ export class AuthService {
   }
 
   async authenticate(username: string, password: string): Promise<any> {
+    console.log('Iniciando autenticação para:', username);
     return new Promise((resolve, reject) => {
       // Adiciona o sufixo ao username
       const fullUsername = `${username}`+process.env.LDAP_DOMAIN;
+      console.log(`Attempting authentication for user: ${fullUsername}`);
       //console.log(fullUsername);
       this.ad.authenticate(fullUsername, password, async (err: any, auth: boolean) => {
         if (err) {
+          console.log('Erro na autenticação:', err);
           return reject(err);
         }
         if (auth) {
+          console.log('Autenticação bem-sucedida para:', fullUsername);
           try {
             return resolve({});
           } catch (error) {
+            console.log('Erro ao tentar resolver autenticação:', error);
             return reject(error);
           }
         } else {
+          console.log('Autenticação falhou, credenciais inválidas para:', fullUsername);
           return resolve(null);
         }
       });
@@ -93,8 +103,13 @@ export class AuthService {
                 //Deleta foto
                 await this.deleteFile(filePath);
               }
-              this.searchDepartment(user);
-
+              //Compara Cargo e Departamento com Banco de Dados
+              const isDepartmentValid = await this.compareDepartment(user);
+              const isCargoValid = await this.compareCargo(user);
+              //Seta o resultado da Comparação no objeto User
+              user.isDepartmentValid = isDepartmentValid;
+              user.isCargoValid = isCargoValid;
+              //Retorna objeto User
               return resolve(user);
           }
         );
@@ -140,7 +155,7 @@ export class AuthService {
     }
   }
 
-  async searchDepartment(userDetails: any): Promise<boolean> {
+  async compareDepartment(userDetails: any): Promise<boolean> {
     const department = userDetails.department;                                  //Salva department do Usuario
     //console.log('Departamento: ' + department);
     //Método para retornar todos os Departamentos
@@ -148,12 +163,18 @@ export class AuthService {
     //console.log(departments);
     const isDepartmentValid = departments.includes(department);                 //Compara department do Usuario com Departments cadastrados
 
-    if(isDepartmentValid){
-      console.log('Departamento Cadastrado');
-    } else {
-      console.log('Departamento não Cadastrado');
-    }
     return isDepartmentValid;
+  }
+
+  async compareCargo(userDetails: any): Promise<boolean> {
+    const cargo = userDetails.title;                                  //Salva cargo do Usuario
+    //console.log('Departamento: ' + department);
+    //Método para retornar todos os Departamentos
+    const cargos =  await this.cargosService.getCargo();          //Pega cargos cadastrados
+    //console.log(departments);
+    const isCargoValid = cargos.includes(cargo);                 //Compara cargo do Usuario com cargo cadastrados
+
+    return isCargoValid;
   }
 
   async deleteFile(filePath: string): Promise<void> {

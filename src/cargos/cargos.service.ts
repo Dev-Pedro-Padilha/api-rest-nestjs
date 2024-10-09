@@ -53,4 +53,10 @@ export class CargosService{
         const cargo = await this.findOne(id_cargo);
         await this.cargosRepository.remove(cargo);
     }
+
+    //Retorna apenas a descrição dos cargos
+    async getCargo(): Promise<string[]>{
+        const cargos = await this.cargosRepository.find();
+        return cargos.map(cargo => cargo.descricao);
+    }
 }

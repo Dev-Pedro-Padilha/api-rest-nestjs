@@ -19,7 +19,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Faz Autenticação e gera Token' })
   async login(@Body() authDto: AuthDto) {
     const { username, password } = authDto;
+    console.log('Iniciando processo de login com:', username);
     try {
+      console.log('Login attempt for:', username);
       //Autentica o usuario e retorna os dados 
       const isAuthenticated = await this.authService.authenticate(username, password);
   

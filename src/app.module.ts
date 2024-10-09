@@ -4,6 +4,7 @@ import { CarsModule } from './cars/cars.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { DepartmentsModule } from './departments/departments.module';
+import { CargosModule } from './cargos/cargos.module';
 import { AuthModule } from './auth/auth.module';
 import { HomeModule } from './home/home.module';
 import * as dotenv from 'dotenv';
@@ -32,6 +33,7 @@ dotenv.config(); // Carrega as variáveis do .env
     CarsModule,
     UsuariosModule,
     DepartmentsModule,
+    CargosModule,
     AuthModule,
     HomeModule
   ],
@@ -43,7 +45,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer){
     consumer
     .apply(AuthMiddleware)
-    .exclude('auth/login')
+    .exclude('auth/login', 'api', 'cars')
     .forRoutes('*');    //Aplica o Middleware em todas as rotas ou rotas especificas
   }
 }
